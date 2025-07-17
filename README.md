@@ -1,8 +1,8 @@
 # Cursor Linux Update
 
-Make cursor work natively on Linux systems.
+Make cursor work natively on Linux systems
 
-Tested on Ubuntu 24.04.
+Tested on Ubuntu 24.04
 
 ## How to use
 
