@@ -2,7 +2,7 @@
 
 Make cursor work natively on Linux systems
 
-Tested on Ubuntu 24.04
+Tested on Ubuntu 24.04, Arch Linux 6.15.6
 
 ## How to use
 
