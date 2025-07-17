@@ -13,7 +13,6 @@ case "$LANG_CODE" in
   *)   L=en ;;
 esac
 
-# Messages (icons removed)
 msg_fetch_link_en="Fetching Cursor download link..."
 msg_fetch_link_ru="Получаем ссылку для скачивания Cursor..."
 msg_fetch_link_de="Cursor-Download-Link wird abgerufen..."
@@ -118,6 +117,58 @@ msg_ready_es="y listo para usar!"
 msg_ready_zh="，可以使用！"
 msg_ready_pt="e pronto para usar!"
 
+msg_invalid_json_en="Invalid response (not JSON):"
+msg_invalid_json_ru="Некорректный ответ (не JSON):"
+msg_invalid_json_de="Ungültige Antwort (kein JSON):"
+msg_invalid_json_fr="Réponse invalide (pas du JSON):"
+msg_invalid_json_es="Respuesta no válida (no es JSON):"
+msg_invalid_json_zh="无效响应（不是 JSON）："
+msg_invalid_json_pt="Resposta inválida (não é JSON):"
+
+msg_function_added_en="Function added to"
+msg_function_added_ru="Функция добавлена в"
+msg_function_added_de="Funktion hinzugefügt zu"
+msg_function_added_fr="Fonction ajoutée à"
+msg_function_added_es="Función añadida a"
+msg_function_added_zh="函数已添加到"
+msg_function_added_pt="Função adicionada a"
+
+msg_restart_shell_en="Restart your terminal or run 'source' to use it."
+msg_restart_shell_ru="Перезапустите терминал или выполните 'source', чтобы использовать."
+msg_restart_shell_de="Starten Sie Ihr Terminal neu oder führen Sie 'source' aus, um es zu verwenden."
+msg_restart_shell_fr="Redémarrez votre terminal ou exécutez 'source' pour l'utiliser."
+msg_restart_shell_es="Reinicie su terminal o ejecute 'source' para usarlo."
+msg_restart_shell_zh="重新启动终端或运行 'source' 以使用。"
+msg_restart_shell_pt="Reinicie seu terminal ou execute 'source' para usar."
+
+msg_function_exists_en="Function already exists in"
+msg_function_exists_ru="Функция уже существует в"
+msg_function_exists_de="Funktion existiert bereits in"
+msg_function_exists_fr="La fonction existe déjà dans"
+msg_function_exists_es="La función ya existe en"
+msg_function_exists_zh="函数已存在于"
+msg_function_exists_pt="A função já existe em"
+
+msg_skipping_en=", skipping."
+msg_skipping_ru=", пропускаем."
+msg_skipping_de=", wird übersprungen."
+msg_skipping_fr=", ignoré."
+msg_skipping_es=", omitiendo."
+msg_skipping_zh=", 跳过。"
+msg_skipping_pt=", pulando."
+
+msg_check_projects_en="Check out our other projects:"
+msg_check_projects_ru="Посмотрите другие наши проекты:"
+msg_check_projects_de="Schauen Sie sich unsere anderen Projekte an:"
+msg_check_projects_fr="Découvrez nos autres projets :"
+msg_check_projects_es="Mira nuestros otros proyectos:"
+msg_check_projects_zh="查看我们的其他项目："
+msg_check_projects_pt="Confira nossos outros projetos:"
+
+# Remove all msg_website_* variables
+# Add a single constant
+WEBSITE_URL="https://api.langie.uk"
+
 # Helper to echo message or fallback to English
 function msg() {
   local key="$1"
@@ -149,12 +200,11 @@ if [[ -z "$RAW_JSON" ]]; then
 fi
 
 if ! echo "$RAW_JSON" | jq empty &>/dev/null; then
-  echo "❌ Invalid response (not JSON):"
-  echo "$RAW_JSON"
+  echo "❌ $(msg msg_invalid_json)"
   exit 1
 fi
 
-DOWNLOAD_URL=$(curl -s -H "User-Agent: Mozilla" "$API_URL" | jq -r '.downloadUrl')
+DOWNLOAD_URL=$(echo "$RAW_JSON" | jq -r '.downloadUrl')
 
 if [[ -z "$DOWNLOAD_URL" ]]; then
   echo "❌ $(msg msg_fail_link)"
@@ -209,8 +259,49 @@ rm -rf "$TMP_DIR"
 # Done
 echo "✅ $(msg msg_success) $APP_PATH $(msg msg_ready)"
 
+# Unified shell config messages
+msg_shell_func_added_en="Cursor function added to"
+msg_shell_func_added_ru="Функция Cursor добавлена в"
+msg_shell_func_added_de="Cursor-Funktion hinzugefügt zu"
+msg_shell_func_added_fr="Fonction Cursor ajoutée à"
+msg_shell_func_added_es="Función Cursor añadida a"
+msg_shell_func_added_zh="Cursor 函数已添加到"
+msg_shell_func_added_pt="Função Cursor adicionada a"
+
+msg_shell_func_exists_en="Cursor function already exists in"
+msg_shell_func_exists_ru="Функция Cursor уже существует в"
+msg_shell_func_exists_de="Cursor-Funktion existiert bereits in"
+msg_shell_func_exists_fr="La fonction Cursor existe déjà dans"
+msg_shell_func_exists_es="La función Cursor ya existe en"
+msg_shell_func_exists_zh="Cursor 函数已存在于"
+msg_shell_func_exists_pt="A função Cursor já existe em"
+
+msg_shell_restart_en="Restart your terminal or run 'source' to use it."
+msg_shell_restart_ru="Перезапустите терминал или выполните 'source', чтобы использовать."
+msg_shell_restart_de="Starten Sie Ihr Terminal neu oder führen Sie 'source' aus, um es zu verwenden."
+msg_shell_restart_fr="Redémarrez votre terminal ou exécutez 'source' pour l'utiliser."
+msg_shell_restart_es="Reinicie su terminal o ejecute 'source' para usarlo."
+msg_shell_restart_zh="重新启动终端或运行 'source' 以使用。"
+msg_shell_restart_pt="Reinicie seu terminal ou execute 'source' para usar."
+
+msg_shell_skipping_en=", skipping."
+msg_shell_skipping_ru=", пропускаем."
+msg_shell_skipping_de=", wird übersprungen."
+msg_shell_skipping_fr=", ignoré."
+msg_shell_skipping_es=", omitiendo."
+msg_shell_skipping_zh=", 跳过。"
+msg_shell_skipping_pt=", pulando."
+
+msg_shell_func_add_start_en="Adding Cursor function to your shell config..."
+msg_shell_func_add_start_ru="Добавление функции Cursor в ваш shell-конфиг..."
+msg_shell_func_add_start_de="Füge die Cursor-Funktion zu deiner Shell-Konfiguration hinzu..."
+msg_shell_func_add_start_fr="Ajout de la fonction Cursor à votre configuration shell..."
+msg_shell_func_add_start_es="Agregando la función Cursor a tu configuración de shell..."
+msg_shell_func_add_start_zh="正在将 Cursor 函数添加到您的 shell 配置..."
+msg_shell_func_add_start_pt="Adicionando a função Cursor à sua configuração do shell..."
+
 # Add cursor() to shell config
-echo "🔧 Adding cursor() function to your shell config..."
+echo "🔧 $(msg msg_shell_func_add_start)"
 
 if [[ -n "${ZSH_VERSION:-}" ]]; then
   SHELL_RC="$HOME/.zshrc"
@@ -221,7 +312,7 @@ else
 fi
 
 # Add only if not present
-if ! grep -q 'function cursor()' "$SHELL_RC"; then
+if ! grep -qE '^\s*(function\s+)?cursor\s*\(\)' "$SHELL_RC"; then
   cat <<EOF >> "$SHELL_RC"
 
 # Launch Cursor with background process
@@ -229,12 +320,16 @@ cursor() {
   nohup "$APP_PATH" --no-sandbox "\$@" >/dev/null 2>&1 &
 }
 EOF
-  echo "✅ Function added to $SHELL_RC. Restart your terminal or run 'source $SHELL_RC' to use it."
+  echo "✅ $(msg msg_shell_func_added) $SHELL_RC. $(msg msg_shell_restart)"
 else
-  echo "ℹ️ Function already exists in $SHELL_RC, skipping."
+  echo "ℹ️ $(msg msg_shell_func_exists) $SHELL_RC$(msg msg_shell_skipping)"
 fi
 
-
 echo ""
-echo "🚀 Check out our other projects:"
-echo "🌐 https://api.langie.uk"
+echo "🚀 $(msg msg_check_projects)"
+echo "🌐 $WEBSITE_URL"
+
+# After icon install
+if command -v gtk-update-icon-cache &>/dev/null; then
+  gtk-update-icon-cache "$HOME/.local/share/icons" || true
+fi
