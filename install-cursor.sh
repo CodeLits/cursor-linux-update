@@ -141,15 +141,29 @@ mkdir -p "$APP_DIR" "$DESKTOP_DIR" "$(dirname "$ICON_PATH")"
 
 # Fetch download link
 echo "⬇️ $(msg msg_fetch_link)"
-DOWNLOAD_URL=$(curl -s "$API_URL" | jq -r '.downloadUrl')
 
-if [[ "$DOWNLOAD_URL" == "null" || -z "$DOWNLOAD_URL" ]]; then
+RAW_JSON=$(curl -fsSL "$API_URL" || echo "")
+if [[ -z "$RAW_JSON" ]]; then
   echo "❌ $(msg msg_fail_link)"
   exit 1
 fi
 
+if ! echo "$RAW_JSON" | jq empty &>/dev/null; then
+  echo "❌ Invalid response (not JSON):"
+  echo "$RAW_JSON"
+  exit 1
+fi
+
+DOWNLOAD_URL=$(curl -s -H "User-Agent: Mozilla" "$API_URL" | jq -r '.downloadUrl')
+
+if [[ -z "$DOWNLOAD_URL" ]]; then
+  echo "❌ $(msg msg_fail_link)"
+  exit 1
+fi
+
+# Download AppImage
 echo "📥 $(msg msg_downloading)"
-curl -L -o "$TMP_DIR/$APP_NAME" "$DOWNLOAD_URL"
+curl -fL -o "$TMP_DIR/$APP_NAME" "$DOWNLOAD_URL"
 
 # File check
 if [[ ! -s "$TMP_DIR/$APP_NAME" ]]; then
@@ -162,6 +176,7 @@ if ! file "$TMP_DIR/$APP_NAME" | grep -q "AppImage"; then
   exit 1
 fi
 
+# Install
 echo "🔄 $(msg msg_installing) $APP_PATH..."
 chmod +x "$TMP_DIR/$APP_NAME"
 mv "$TMP_DIR/$APP_NAME" "$APP_PATH"
@@ -169,7 +184,7 @@ mv "$TMP_DIR/$APP_NAME" "$APP_PATH"
 # Icon
 echo "🖼 $(msg msg_icon)"
 if [[ ! -f "$ICON_PATH" ]]; then
-  curl -L -o "$ICON_PATH" "$ICON_URL" || echo "⚠️ $(msg msg_icon_fail)"
+  curl -fL -o "$ICON_PATH" "$ICON_URL" || echo "⚠️ $(msg msg_icon_fail)"
 fi
 
 # .desktop file
@@ -185,18 +200,40 @@ Terminal=false
 EOF
 
 echo "🔃 $(msg msg_cache)"
-update-desktop-database "$HOME/.local/share/applications" || true
+command -v update-desktop-database &>/dev/null && update-desktop-database "$HOME/.local/share/applications" || true
 
 # Cleanup
-echo "# 🧹 $(msg msg_cleanup)"
+echo "🧹 $(msg msg_cleanup)"
 rm -rf "$TMP_DIR"
 
+# Done
 echo "✅ $(msg msg_success) $APP_PATH $(msg msg_ready)"
-echo ""
-echo "📌 You can add alias to your .bashrc or .zshrc to make it easier to use:"
-echo "cursor() {
-  nohup \"$APP_PATH\" --no-sandbox \"\$@\" >/dev/null 2>&1 &
-}"
+
+# Add cursor() to shell config
+echo "🔧 Adding cursor() function to your shell config..."
+
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+  SHELL_RC="$HOME/.zshrc"
+elif [[ -n "${BASH_VERSION:-}" ]]; then
+  SHELL_RC="$HOME/.bashrc"
+else
+  SHELL_RC="$HOME/.bashrc" # default fallback
+fi
+
+# Add only if not present
+if ! grep -q 'function cursor()' "$SHELL_RC"; then
+  cat <<EOF >> "$SHELL_RC"
+
+# Launch Cursor with background process
+cursor() {
+  nohup "$APP_PATH" --no-sandbox "\$@" >/dev/null 2>&1 &
+}
+EOF
+  echo "✅ Function added to $SHELL_RC. Restart your terminal or run 'source $SHELL_RC' to use it."
+else
+  echo "ℹ️ Function already exists in $SHELL_RC, skipping."
+fi
+
 
 echo ""
 echo "🚀 Check out our other projects:"
